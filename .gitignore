@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets
+.env
+*.key
+
+# Pipeline outputs and temp files (outputs belong in the parent youtube folder)
+*.mp4
+*.mkv
+*.webm
+*.m4a
+*.srt
+*.vtt
+*.part
+*.ytdl
+.burn_tmp.srt
+.last_download.txt
+
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

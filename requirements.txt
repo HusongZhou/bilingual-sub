@@ -1,0 +1,4 @@
+deep-translator
+pysrt
+anthropic
+openai
