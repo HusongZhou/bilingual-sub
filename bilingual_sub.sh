@@ -9,9 +9,7 @@
 #   ./bilingual_sub.sh <youtube_url> [--engine ENGINE] [--api-key KEY] [--model M] [--base-url URL] [--context "..."] [--out-dir DIR] [--burn]
 #
 # --engine: google (default, no key) | deepl | microsoft | yandex | claude | deepseek | openai
-#   claude:   key from ANTHROPIC_API_KEY or --api-key
-#   deepseek: key from DEEPSEEK_API_KEY or --api-key
-#   openai:   any OpenAI-compatible API: --base-url URL --model M --api-key KEY
+# API keys: put them in .env next to this script (copy .env.example), or pass --api-key.
 # See translate_srt.py for details.
 # --burn permanently renders the subtitles into the video frame instead of
 #   attaching them as a selectable soft-subtitle track.
@@ -49,19 +47,20 @@ if [[ -z "$URL" ]]; then
   exit 1
 fi
 
-# Keys saved with `setx` only reach terminals opened afterwards; read the saved value as a fallback.
-for VAR in DEEPSEEK_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY; do
+# Windows: keys saved with `setx` only reach terminals opened afterwards; read the saved value as a fallback.
+for VAR in DEEPSEEK_API_KEY ANTHROPIC_API_KEY OPENAI_API_KEY DEEPL_API_KEY MICROSOFT_TRANSLATOR_KEY YANDEX_API_KEY; do
   if [[ -z "${!VAR}" ]] && command -v powershell.exe >/dev/null; then
     VAL=$(powershell.exe -NoProfile -Command "[Environment]::GetEnvironmentVariable('$VAR','User')" | tr -d '\r\n')
     [[ -n "$VAL" ]] && export "$VAR=$VAL"
   fi
 done
 
-if ! command -v ffmpeg >/dev/null; then
+if ! command -v ffmpeg >/dev/null && command -v cygpath >/dev/null; then
   FF_DIR=$(ls -d "$(cygpath -u "$LOCALAPPDATA")"/Microsoft/WinGet/Packages/*FFmpeg*/*/bin 2>/dev/null | head -1)
   [[ -z "$FF_DIR" ]] && { echo "ffmpeg not found. Install it: winget install ffmpeg"; exit 1; }
   export PATH="$FF_DIR:$PATH"
 fi
+command -v ffmpeg >/dev/null || { echo "ffmpeg not found. Install it first."; exit 1; }
 
 export PYTHONIOENCODING=utf-8
 LOG=$(mktemp)
@@ -76,7 +75,7 @@ yt-dlp --encoding utf-8 -f "bv*+ba/best" --merge-output-format mp4 \
   "$URL" > "$LOG"
 
 VIDEO=$(grep -E '\.(mp4|mkv|webm)$' "$LOG" | tail -1)
-[[ -n "$VIDEO" ]] && VIDEO=$(cygpath -u "$VIDEO")
+[[ -n "$VIDEO" ]] && command -v cygpath >/dev/null && VIDEO=$(cygpath -u "$VIDEO")
 VIDEO_DIR=$(dirname "$VIDEO")
 BASENAME="${VIDEO%.*}"
 EN_SRT=$(ls "${BASENAME}".*en*.srt 2>/dev/null | head -1)
