@@ -55,7 +55,8 @@ cp .env.example .env
 ├── <标题>.mp4                  原视频
 ├── <标题>.en.srt               英文字幕
 ├── <标题>.en.bilingual.srt     双语字幕（可外挂）
-└── <标题>_bilingual.mp4        嵌入双语字幕的视频
+├── <标题>_bilingual.mp4        软字幕版（默认）
+└── <标题>_burned.mp4           字幕烧进画面的版本（加 --burn 时生成）
 ```
 
 ### 常用参数
@@ -66,7 +67,7 @@ cp .env.example .env
 | `--model` | 模型名。deepseek 默认 `deepseek-flash`，claude 默认 `claude-opus-5-5` |
 | `--context "..."` | 视频背景，帮助大模型翻准人名和梗 |
 | `--out-dir DIR` | 输出根目录 |
-| `--burn` | 把字幕烧进画面（会重新编码，较慢） |
+| `--burn` | 把字幕烧进画面，另存为 `_burned.mp4`。有 NVIDIA 显卡时自动用显卡编码，否则用 CPU（较慢） |
 | `--api-key KEY` | 临时指定 key，覆盖 `.env` |
 
 ### 例子
@@ -94,6 +95,7 @@ python translate_srt.py input.en.srt --engine deepseek
 ## 注意
 
 - 视频需要有英文字幕（人工或自动生成都可以）
+- 同一个视频重跑时（比如先生成软字幕版、再加 `--burn`），已有的 `.bilingual.srt` 会直接复用，不会重复翻译；想重新翻译就先删掉它
 - YouTube 高清视频常是 AV1 编码，Windows 自带播放器可能需要装 AV1 扩展；VLC、PotPlayer 可直接播放
 - 请仅用于个人学习，遵守 YouTube 服务条款和视频版权
 

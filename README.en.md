@@ -55,7 +55,8 @@ Output goes to a folder named after the video title, two levels above the script
 ├── <title>.mp4                  original video
 ├── <title>.en.srt               English subtitles
 ├── <title>.en.bilingual.srt     bilingual subtitles (usable as an external sub file)
-└── <title>_bilingual.mp4        video with bilingual subtitles embedded
+├── <title>_bilingual.mp4        soft-subtitle version (default)
+└── <title>_burned.mp4           subtitles burned into the frame (with --burn)
 ```
 
 ### Options
@@ -66,7 +67,7 @@ Output goes to a folder named after the video title, two levels above the script
 | `--model` | Model name. Defaults: `deepseek-flash` for deepseek, `claude-opus-5-5` for claude |
 | `--context "..."` | What the video is about, so the LLM gets names and references right |
 | `--out-dir DIR` | Output root folder |
-| `--burn` | Burn subtitles into the frame (re-encodes the video, slower) |
+| `--burn` | Burn subtitles into the frame, saved as `_burned.mp4`. Uses the NVIDIA GPU encoder when available, otherwise the CPU (slower) |
 | `--api-key KEY` | Use this key for this run, overriding `.env` |
 
 ### Examples
@@ -94,6 +95,7 @@ python translate_srt.py input.en.srt --engine deepseek
 ## Notes
 
 - The video needs English subtitles (manual or auto-generated)
+- Re-running on the same video (e.g. soft version first, then `--burn`) reuses the existing `.bilingual.srt` instead of translating again; delete it to re-translate
 - HD YouTube videos are often AV1-encoded; the built-in Windows player may need the AV1 extension, while VLC and PotPlayer play them directly
 - For personal study only. Respect YouTube's Terms of Service and the video's copyright
 

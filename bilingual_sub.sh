@@ -78,7 +78,10 @@ VIDEO=$(grep -E '\.(mp4|mkv|webm)$' "$LOG" | tail -1)
 [[ -n "$VIDEO" ]] && command -v cygpath >/dev/null && VIDEO=$(cygpath -u "$VIDEO")
 VIDEO_DIR=$(dirname "$VIDEO")
 BASENAME="${VIDEO%.*}"
-EN_SRT=$(ls "${BASENAME}".*en*.srt 2>/dev/null | head -1)
+EN_SRT=""
+for LANG_CODE in en en-orig en-US en-GB; do
+  [[ -f "${BASENAME}.${LANG_CODE}.srt" ]] && { EN_SRT="${BASENAME}.${LANG_CODE}.srt"; break; }
+done
 
 if [[ -z "$VIDEO" || -z "$EN_SRT" ]]; then
   echo "Could not locate the downloaded video or its English subtitle file."
@@ -99,19 +102,34 @@ TRANSLATE_ARGS=(--engine "$ENGINE")
 [[ -n "$BASE_URL" ]] && TRANSLATE_ARGS+=(--base-url "$BASE_URL")
 [[ -n "$CONTEXT" ]] && TRANSLATE_ARGS+=(--context "$CONTEXT")
 
-python "$SCRIPT_DIR/translate_srt.py" "$EN_SRT" "${TRANSLATE_ARGS[@]}"
 BILINGUAL_SRT="${EN_SRT%.srt}.bilingual.srt"
-
-echo "== Muxing subtitles into the video =="
-OUT="${BASENAME}_bilingual.mp4"
+if [[ -f "$BILINGUAL_SRT" ]]; then
+  echo "Reusing existing $(basename "$BILINGUAL_SRT") (delete it to re-translate)"
+else
+  python "$SCRIPT_DIR/translate_srt.py" "$EN_SRT" "${TRANSLATE_ARGS[@]}"
+fi
 
 if [[ "$BURN" -eq 1 ]]; then
+  echo "== Burning subtitles into the video =="
+  OUT="${BASENAME}_burned.mp4"
+  # A real 1-frame encode, since ffmpeg can list h264_nvenc on machines without a usable NVIDIA GPU.
+  if ffmpeg -v error -f lavfi -i color=s=256x256:d=0.1 -c:v h264_nvenc -f null - 2>/dev/null; then
+    echo "Using NVIDIA GPU encoder (h264_nvenc)"
+    DECODE=(-hwaccel auto)
+    CODEC=(-c:v h264_nvenc -preset p5 -cq 23)
+  else
+    echo "No NVIDIA GPU encoder, using CPU (libx264, slower)"
+    DECODE=()
+    CODEC=(-c:v libx264 -preset medium -crf 20)
+  fi
   # ffmpeg's subtitles filter can't take paths with spaces/colons/quotes, so use a plain temp name.
   cd "$VIDEO_DIR"
   cp "$BILINGUAL_SRT" .burn_tmp.srt
-  ffmpeg -y -i "$VIDEO" -vf "subtitles=.burn_tmp.srt" -c:a copy "$OUT"
+  ffmpeg -y "${DECODE[@]}" -i "$VIDEO" -vf "subtitles=.burn_tmp.srt" "${CODEC[@]}" -c:a copy "$OUT"
   rm -f .burn_tmp.srt
 else
+  echo "== Muxing subtitles into the video =="
+  OUT="${BASENAME}_bilingual.mp4"
   ffmpeg -y -i "$VIDEO" -i "$BILINGUAL_SRT" -map 0 -map 1 -c copy -c:s mov_text \
     -metadata:s:s:0 language=chi "$OUT"
 fi
