@@ -96,3 +96,7 @@ python translate_srt.py input.en.srt --engine deepseek
 - The video needs English subtitles (manual or auto-generated)
 - HD YouTube videos are often AV1-encoded; the built-in Windows player may need the AV1 extension, while VLC and PotPlayer play them directly
 - For personal study only. Respect YouTube's Terms of Service and the video's copyright
+
+## License
+
+[MIT](LICENSE). The license covers the code in this repository only, not any video content you download with it.

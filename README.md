@@ -96,3 +96,7 @@ python translate_srt.py input.en.srt --engine deepseek
 - 视频需要有英文字幕（人工或自动生成都可以）
 - YouTube 高清视频常是 AV1 编码，Windows 自带播放器可能需要装 AV1 扩展；VLC、PotPlayer 可直接播放
 - 请仅用于个人学习，遵守 YouTube 服务条款和视频版权
+
+## License
+
+[MIT](LICENSE)。本许可只针对本仓库的代码，不涉及你用它下载的视频内容。
