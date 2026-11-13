@@ -35,6 +35,7 @@ description: 用户给出 YouTube 视频链接，要求做中英双语字幕、�
 | `--out-dir DIR` | 输出根目录；默认 `E:\Asset Library\youtube` |
 | `--context "..."` | 视频背景 |
 | `--burn` | 烧录（仅用户明确要求时） |
+| `--post` | 顺带生成 B 站投稿简报（交给 bilibili-post） |
 
 ## 输出
 
@@ -42,15 +43,28 @@ description: 用户给出 YouTube 视频链接，要求做中英双语字幕、�
 <out-dir>/<视频标题>/
 ├── <标题>.mp4                  原视频
 ├── <标题>.jpg                  封面
+├── <标题>.info.json            原视频信息（频道、日期、播放量、简介），B 站投稿包会用
 ├── <标题>.en.srt               英文字幕
 ├── <标题>.en.bilingual.srt     双语字幕（可外挂）
 ├── <标题>_bilingual.mp4        软字幕版（默认）
 └── <标题>_burned.mp4           烧录版（仅 --burn）
 ```
 
+## 接着发 B 站
+
+用户如果同时要 B 站投稿信息（标题、标签、简介），两种接法：
+
+- **一条命令跑完**：加 `--post`，视频做好后自动生成 `bili/brief.md`（元数据、章节、候选钩子段）和 `bili/transcript.txt`，最后打印 `brief: <路径>`。然后按 `bilibili-post` 的 SKILL.md 接着写投稿包。
+- **分两次**：先跑本脚本，再把 `<视频标题>` 文件夹交给 `bilibili-post` skill。
+
+`--post` 只准备数据，不写文案；标题、简介、标签是 bilibili-post 的活。
+
+做字幕算「个人学习」，发 B 站算「转载」，两件事别混：发之前确认转载声明写全、没有编造授权。
+
 ## 汇报
 
 - 以脚本最后一行 `Done: <路径>` 为准，给出输出文件夹和成品视频路径；没看到 `Done:` 不算完成。
+- 加了 `--post` 时，再以 `brief:` 那行为简报路径。
 - 可读几行 `.bilingual.srt` 抽查翻译质量（英文在上、中文在下）。
 - 常见失败：视频没有英文字幕（脚本会打印 yt-dlp 输出）、缺 ffmpeg（`winget install ffmpeg`）、API key 无效。如实转述错误，不要声称成功。
 - 软字幕版在 Windows 自带播放器里可能看不到字幕或需 AV1 扩展，推荐 VLC / PotPlayer。

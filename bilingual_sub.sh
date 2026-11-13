@@ -6,13 +6,15 @@
 # two levels above this script (tools/bilingual-sub -> E:\Asset Library\youtube).
 #
 # Usage:
-#   ./bilingual_sub.sh <youtube_url> [--engine ENGINE] [--api-key KEY] [--model M] [--base-url URL] [--context "..."] [--out-dir DIR] [--burn]
+#   ./bilingual_sub.sh <youtube_url> [--engine ENGINE] [--api-key KEY] [--model M] [--base-url URL] [--context "..."] [--out-dir DIR] [--burn] [--post]
 #
 # --engine: google (default, no key) | deepl | microsoft | yandex | claude | deepseek | openai
 # API keys: put them in .env next to this script (copy .env.example), or pass --api-key.
 # See translate_srt.py for details.
 # --burn permanently renders the subtitles into the video frame instead of
 #   attaching them as a selectable soft-subtitle track.
+# --post hands the finished folder to the bilibili-post skill: it only generates
+#   bili/brief.md (metadata + hook material), the writing itself is done by the agent.
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -27,6 +29,7 @@ BASE_URL=""
 CONTEXT=""
 OUT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BURN=0
+POST=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -38,12 +41,13 @@ while [[ $# -gt 0 ]]; do
     --context) CONTEXT="$2"; shift 2 ;;
     --out-dir) OUT_DIR="$2"; shift 2 ;;
     --burn) BURN=1; shift ;;
+    --post) POST=1; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
 
 if [[ -z "$URL" ]]; then
-  echo "Usage: $0 <youtube_url> [--engine ENGINE] [--api-key KEY] [--model M] [--context \"...\"] [--out-dir DIR] [--burn]"
+  echo "Usage: $0 <youtube_url> [--engine ENGINE] [--api-key KEY] [--model M] [--context \"...\"] [--out-dir DIR] [--burn] [--post]"
   exit 1
 fi
 
@@ -71,6 +75,7 @@ yt-dlp --encoding utf-8 -f "bv*+ba/best" --merge-output-format mp4 \
   --write-subs --write-auto-subs --sub-langs "en,en-orig,en-US,en-GB" \
   --sub-format srt --convert-subs srt \
   --write-thumbnail --convert-thumbnails jpg \
+  --write-info-json \
   --print after_move:filepath \
   -P "$OUT_DIR" -o "%(title)s/%(title)s.%(ext)s" \
   "$URL" > "$LOG"
@@ -136,3 +141,15 @@ else
 fi
 
 echo "Done: $OUT"
+
+# Hand the finished folder to the bilibili-post skill. It only prepares data
+# (bili/brief.md + transcript); the copywriting is done by the agent from SKILL.md.
+if [[ "$POST" -eq 1 ]]; then
+  BRIEF="$SCRIPT_DIR/../bilibili-post/scripts/bili_brief.py"
+  if [[ -f "$BRIEF" ]]; then
+    echo "== Post brief (bilibili-post) =="
+    python "$BRIEF" "$VIDEO_DIR" || echo "Brief failed. The video above is still fine."
+  else
+    echo "bilibili-post not found at $BRIEF, skipped the brief."
+  fi
+fi

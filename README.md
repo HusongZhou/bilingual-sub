@@ -54,6 +54,7 @@ cp .env.example .env
 <out-dir>/<视频标题>/
 ├── <标题>.mp4                  原视频
 ├── <标题>.jpg                  视频封面
+├── <标题>.info.json            原视频信息（频道、发布日期、播放量、简介、标签）
 ├── <标题>.en.srt               英文字幕
 ├── <标题>.en.bilingual.srt     双语字幕（可外挂）
 ├── <标题>_bilingual.mp4        软字幕版（默认）
@@ -69,6 +70,7 @@ cp .env.example .env
 | `--context "..."` | 视频背景，帮助大模型翻准人名和梗 |
 | `--out-dir DIR` | 输出根目录 |
 | `--burn` | 把字幕烧进画面，另存为 `_burned.mp4`。有 NVIDIA 显卡时自动用显卡编码，否则用 CPU（较慢） |
+| `--post` | 顺带生成 B 站投稿简报，交给 [bilibili-post](../bilibili-post) 写标题、简介、标签 |
 | `--api-key KEY` | 临时指定 key，覆盖 `.env` |
 
 ### 例子
@@ -85,6 +87,9 @@ cp .env.example .env
 
 # 字幕烧进画面
 ./bilingual_sub.sh "URL" --engine deepseek --burn
+
+# 下完顺手备好 B 站投稿简报（标题、简介、标签接着让 bilibili-post 写）
+./bilingual_sub.sh "URL" --engine deepseek --post
 ```
 
 ### 只翻译一个 srt 文件
