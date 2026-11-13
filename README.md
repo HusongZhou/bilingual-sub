@@ -1,8 +1,8 @@
 # bilingual-sub
 
-输入一个 YouTube 链接，自动下载视频和英文字幕，翻译成中文，生成**中英双语字幕**并嵌入视频。适合看英文视频学英语。
+**中文** | [English](README.en.md)
 
-Give it a YouTube URL; it downloads the video and English subtitles, translates them to Chinese, and embeds stacked English/Chinese subtitles into the video.
+输入一个 YouTube 链接，自动下载视频和英文字幕，翻译成中文，生成**中英双语字幕**并嵌入视频。适合看英文视频学英语。
 
 ## 效果
 
