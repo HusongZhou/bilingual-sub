@@ -15,7 +15,7 @@ i worked my ass off
 
 ## Features
 
-- **One command, end to end**: download → translate → embed subtitles
+- **One command, end to end**: download video and thumbnail → translate → embed subtitles
 - **LLM translation**: DeepSeek, Claude, or any OpenAI-compatible model (Qwen, Kimi, local Ollama, ...). Lines are sent 40 at a time so the model sees the surrounding dialogue and handles slang, idioms and jokes naturally. Use `--context` to tell the model what the video is about
 - **Machine translation too**: Google (no key), DeepL, Microsoft, Yandex
 - **Handles auto-generated captions**: YouTube's auto captions overlap in time, which would stack four lines on screen once bilingual; the script trims the overlaps. Lines the model skips are re-translated automatically
@@ -53,6 +53,7 @@ Output goes to a folder named after the video title, two levels above the script
 ```
 <out-dir>/<video title>/
 ├── <title>.mp4                  original video
+├── <title>.jpg                  video thumbnail
 ├── <title>.en.srt               English subtitles
 ├── <title>.en.bilingual.srt     bilingual subtitles (usable as an external sub file)
 ├── <title>_bilingual.mp4        soft-subtitle version (default)

@@ -66,10 +66,11 @@ export PYTHONIOENCODING=utf-8
 LOG=$(mktemp)
 trap 'rm -f "$LOG"' EXIT
 
-echo "== Downloading video + English subtitles into $OUT_DIR =="
+echo "== Downloading video, thumbnail + English subtitles into $OUT_DIR =="
 yt-dlp --encoding utf-8 -f "bv*+ba/best" --merge-output-format mp4 \
   --write-subs --write-auto-subs --sub-langs "en,en-orig,en-US,en-GB" \
   --sub-format srt --convert-subs srt \
+  --write-thumbnail --convert-thumbnails jpg \
   --print after_move:filepath \
   -P "$OUT_DIR" -o "%(title)s/%(title)s.%(ext)s" \
   "$URL" > "$LOG"
